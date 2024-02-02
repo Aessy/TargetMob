@@ -160,6 +160,13 @@ function TargetMobTracker:OnUpdate(elapsed)
     end
 end
 
+function TargetMobTracker:AddTargetByName(name)
+    local now = GetTime()
+    scan_list[name] = { added = now}
+
+    self:RefreshTargetList()
+end
+
 function TargetMobTracker:AddTarget()
     local kind = "target"
     local unit_name = UnitName(kind)
@@ -224,20 +231,46 @@ function TargetMobTracker:CreateCreatureFrame()
             tracker.creature_frame)
 
     btn:ClearAllPoints()
-    btn:SetPoint("BOTTOM", self.creature_frame, "BOTTOM", 0, 0)
+    btn:SetPoint("BOTTOMLEFT", self.creature_frame, "BOTTOM", 0, 0)
     btn:RegisterForClicks("AnyDown")
     btn:SetText("Add Target")
     btn:SetNormalFontObject("GameFontNormalSmall")
     btn:SetScript("OnClick", function(self, button, down)
+        print("Add target")
         tracker:AddTarget()
         end)
-    btn:SetSize(180, 25)
+    btn:SetSize(60, 25)
 
     tracker.creature_frame.add_target = btn
     tracker.creature_frame.creature_list = {}
 
     btn:Show()
 
+    StaticPopupDialogs["ADD_MOB"] = {
+        text = "Add a mob by name",
+        button1 = "Add",
+        hasEditBox = 1,
+        OnAccept = function(box, data, data2)
+            local text = box.editBox:GetText()
+            self:AddTargetByName(text)
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true
+    }
+
+    local add_mob = CreateFrame("Button", "AddMob", tracker.creature_frame)
+    add_mob:ClearAllPoints()
+    add_mob:SetPoint("BOTTOMRIGHT", self.creature_frame, "BOTTOM", 0, 0)
+    add_mob:RegisterForClicks("AnyDown")
+    add_mob:SetText("Add Mob")
+    add_mob:SetNormalFontObject("GameFontNormalSmall")
+    add_mob:SetScript("OnClick", function(self, button, down)
+        print("Add mob")
+        StaticPopup_Show("ADD_MOB")
+        end)
+    add_mob:Show()
+    add_mob:SetSize(60, 25)
 
     local btn_last = nil
     for i=1,10 do
